@@ -81,30 +81,39 @@ class MainListener : ListenerAdapter() {
 
         if (content.startsWith("!start")) {
             start(event, queue, manager)
+            return
         }
         if (content.startsWith("!clear")) {
             clear(queue, manager, event)
+            return
         }
         if (content.startsWith("!list")) {
             list(queue, event)
+            return
         }
         if (content.startsWith("!repeat_one")) {
             repeatOne(manager, event)
+            return
         }
         if (content.startsWith("!skip")) {
             skip(queue, manager)
+            return
         }
         if (content.startsWith("!add")) {
             add(content, manager, event, queue)
+            return
         }
         if (content.startsWith("!search")) {
             search(event, manager, queue)
+            return
         }
         if (content.startsWith("!play_that")) {
             playThat(event, queue)
+            return
         }
         if (content.startsWith("!help")) {
             help(event)
+            return
         }
     }
 
@@ -158,6 +167,7 @@ class MainListener : ListenerAdapter() {
         val voiceChannel = event.member?.voiceState?.channel
         if (queue.isEmpty()) {
             event.message.reply("песни добавь еблан").queue()
+            return
         }
         if (voiceChannel != null) {
             event.guild.audioManager.openAudioConnection(voiceChannel)
