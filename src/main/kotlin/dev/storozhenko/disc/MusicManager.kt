@@ -42,6 +42,7 @@ class MusicManager {
     class AudioEventListener(private val queue: Queue<AudioTrack>) : AudioEventAdapter() {
         var repeatOne = false
         override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, endReason: AudioTrackEndReason?) {
+            if (endReason == AudioTrackEndReason.REPLACED) return
             if (endReason?.mayStartNext == true && repeatOne) {
                 player.playTrack(track.makeClone())
             } else if (queue.isNotEmpty()) {
