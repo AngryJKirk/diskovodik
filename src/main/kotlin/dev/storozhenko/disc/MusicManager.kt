@@ -19,7 +19,7 @@ class MusicManager {
         AudioSourceManagers.registerLocalSource(playerManager)
     }
 
-    fun getGuildAudioPlayer(guild: Guild, queue: Queue<AudioTrack>): GuildMusicManager {
+    fun getGuildMusicManager(guild: Guild, queue: Queue<AudioTrack>): GuildMusicManager {
         val guildId = guild.idLong
         var musicManager = musicManagers[guildId]
 
