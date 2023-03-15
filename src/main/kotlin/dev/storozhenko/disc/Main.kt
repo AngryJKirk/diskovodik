@@ -118,8 +118,12 @@ class MainListener : ListenerAdapter() {
     }
 
     private fun search(event: MessageReceivedEvent, manager: MusicManager.GuildMusicManager, queue: Queue<AudioTrack>) {
+        var query = event.message.contentRaw.substringAfter(" ")
+        if (!urlRegex.matches(query)) {
+            query = "ytsearch:$query"
+        }
         musicManager.playerManager.loadItemOrdered(
-            manager, "ytsearch:${event.message.contentRaw.substringAfter(" ")}",
+            manager, query,
             SearchLoadHandler(event, queue)
         )
     }
