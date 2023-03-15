@@ -46,7 +46,7 @@ class MusicManager {
             if (endReason?.mayStartNext == true && repeatOne) {
                 player.playTrack(track.makeClone())
             } else if (queue.isNotEmpty()) {
-                player.playTrack(queue.poll())
+                player.playTrack(queue.poll().makeClone())
             }
         }
     }
