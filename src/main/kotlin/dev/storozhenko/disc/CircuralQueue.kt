@@ -20,6 +20,7 @@ class CircularQueue<T> : Queue<T> {
     override fun clear() {
         items.clear()
         currentIndex.set(0)
+        cycles = 0
     }
 
     override fun iterator(): MutableIterator<T> {
