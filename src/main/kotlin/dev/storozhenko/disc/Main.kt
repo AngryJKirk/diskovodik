@@ -156,8 +156,9 @@ class MainListener : ListenerAdapter() {
         event: MessageReceivedEvent,
         queue: Queue<AudioTrack>
     ) {
-        content.split("\\s".toRegex())
-            .filter { it != "!add" }
+        content
+            .replace("!add ", "")
+            .split(",")
             .map { if (urlRegex.matches(it).not()) "ytsearch:$it" else it }
             .forEach { musicManager.playerManager.loadItemOrdered(manager, it, SingleTrackLoadHandler(queue, event)) }
     }
