@@ -156,12 +156,10 @@ class MainListener : ListenerAdapter() {
         event: MessageReceivedEvent,
         queue: Queue<AudioTrack>
     ) {
-        var trackUrl = content.substringAfter(" ")
-        if (urlRegex.matches(trackUrl).not()) {
-            trackUrl = "ytsearch:$trackUrl"
-        }
-        // Load and play the track
-        musicManager.playerManager.loadItemOrdered(manager, trackUrl, SingleTrackLoadHandler(queue, event))
+        content.split("\\s".toRegex())
+            .filter { it != "!add" }
+            .map { if (urlRegex.matches(it).not()) "ytsearch:$it" else it }
+            .forEach { musicManager.playerManager.loadItemOrdered(manager, it, SingleTrackLoadHandler(queue, event)) }
     }
 
     private fun start(
