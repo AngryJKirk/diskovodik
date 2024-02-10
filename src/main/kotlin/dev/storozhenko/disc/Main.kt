@@ -1,9 +1,18 @@
 package dev.storozhenko.disc
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import dev.storozhenko.disc.handlers.Add
+import dev.storozhenko.disc.handlers.Clear
+import dev.storozhenko.disc.handlers.Help
+import dev.storozhenko.disc.handlers.PlayThat
+import dev.storozhenko.disc.handlers.RepeatOne
+import dev.storozhenko.disc.handlers.Search
+import dev.storozhenko.disc.handlers.SearchResults
+import dev.storozhenko.disc.handlers.Skip
+import dev.storozhenko.disc.handlers.Start
+import dev.storozhenko.disc.misc.CircularQueue
+import dev.storozhenko.disc.misc.EventContext
+import dev.storozhenko.disc.misc.MusicManager
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
@@ -11,11 +20,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.requests.GatewayIntent
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
-import net.dv8tion.jda.api.utils.messages.MessageCreateData
-import java.time.Duration
 import java.util.Queue
 
 fun main() {
@@ -30,8 +35,17 @@ fun main() {
 }
 
 private val queues: MutableMap<Long, Queue<AudioTrack>> = mutableMapOf()
-private val searchResults: MutableMap<Long, Collection<AudioTrack>> = mutableMapOf()
 private val musicManager = MusicManager()
+
+private val add = Add(musicManager)
+private val search = Search(musicManager)
+private val clear = Clear()
+private val help = Help()
+private val list = dev.storozhenko.disc.handlers.List()
+private val playThat = PlayThat()
+private val repeatOne = RepeatOne()
+private val skip = Skip()
+private val start = Start()
 val urlRegex = Regex("\\b((?:https?://|www\\.)\\S+)\\b")
 
 class MainListener : ListenerAdapter() {
@@ -62,7 +76,7 @@ class MainListener : ListenerAdapter() {
     }
 
     private fun searchButtonHandler(buttonId: String, event: ButtonInteractionEvent, queue: Queue<AudioTrack>) {
-        val tracks = searchResults[event.guild?.idLong] ?: return
+        val tracks = SearchResults.searchResults[event.guild?.idLong] ?: return
         val track = tracks.find { it.identifier == buttonId }
         if (track == null) {
             event.reply("Чет пошло не так").queue()
@@ -75,150 +89,26 @@ class MainListener : ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.message.author.isBot || event.message.author.isSystem) return
 
-        val content = event.message.contentRaw
+        val context = toContext(event)
+        val handler = when {
+            context.forCommand("!start") -> start::handle
+            context.forCommand("!clear") -> clear::handle
+            context.forCommand("!list") -> list::handle
+            context.forCommand("!repeat_one") -> repeatOne::handle
+            context.forCommand("!skip") -> skip::handle
+            context.forCommand("!add") -> add::handle
+            context.forCommand("!search") -> search::handle
+            context.forCommand("!play_that") -> playThat::handle
+            context.forCommand("!help") -> help::handle
+            else -> return
+        }
+        handler(context)
+    }
+
+    private fun toContext(event: MessageReceivedEvent): EventContext {
         val queue = queues.computeIfAbsent(event.guild.idLong) { _ -> CircularQueue() }
         val manager = musicManager.getGuildMusicManager(event.guild, queue)
-
-        if (content.startsWith("!start")) {
-            start(event, queue, manager)
-            return
-        }
-        if (content.startsWith("!clear")) {
-            clear(queue, manager, event)
-            return
-        }
-        if (content.startsWith("!list")) {
-            list(queue, event)
-            return
-        }
-        if (content.startsWith("!repeat_one")) {
-            repeatOne(manager, event)
-            return
-        }
-        if (content.startsWith("!skip")) {
-            skip(queue, manager)
-            return
-        }
-        if (content.startsWith("!add")) {
-            add(content, manager, event, queue)
-            return
-        }
-        if (content.startsWith("!search")) {
-            search(event, manager, queue)
-            return
-        }
-        if (content.startsWith("!play_that")) {
-            playThat(event, queue)
-            return
-        }
-        if (content.startsWith("!help")) {
-            help(event)
-            return
-        }
-    }
-
-    private fun search(event: MessageReceivedEvent, manager: MusicManager.GuildMusicManager, queue: Queue<AudioTrack>) {
-        var query = event.message.contentRaw.substringAfter(" ")
-        if (!urlRegex.matches(query)) {
-            query = "ytsearch:$query"
-        }
-        musicManager.playerManager.loadItemOrdered(
-            manager, query,
-            SearchLoadHandler(event, queue)
-        )
-    }
-
-    private fun help(event: MessageReceivedEvent) {
-        event.message.reply(
-            """
-                    !add УРЛ добавляет песню или плейлист с ютуба, можно просто текстом
-                    !start начинает играть
-                    !skip скипнуть трек
-                    !clear очищает очередь и перестает играть
-                    !list показывает инфо и выдает песни, если на них нажать удалятся из очереди
-                    !repeat_one ставит репит текущего трека
-                    !play_that показывает очередь которую можно проиграть
-                    !search позволяет искать и добавлять песни по запросу
-                """.trimIndent()
-        ).queue()
-    }
-
-    private fun playThat(
-        event: MessageReceivedEvent,
-        queue: Queue<AudioTrack>
-    ) {
-        event.message.reply(createButtons(queue, "play")).queue()
-    }
-
-    private fun add(
-        content: String,
-        manager: MusicManager.GuildMusicManager,
-        event: MessageReceivedEvent,
-        queue: Queue<AudioTrack>
-    ) {
-        content
-            .replace("!add ", "")
-            .split(",")
-            .map { if (urlRegex.matches(it).not()) "ytsearch:$it" else it }
-            .forEach { musicManager.playerManager.loadItemOrdered(manager, it, SingleTrackLoadHandler(queue, event)) }
-    }
-
-    private fun start(
-        event: MessageReceivedEvent,
-        queue: Queue<AudioTrack>,
-        manager: MusicManager.GuildMusicManager
-    ) {
-        val voiceChannel = event.member?.voiceState?.channel
-        if (queue.isEmpty()) {
-            event.message.reply("песни добавь еблан").queue()
-            return
-        }
-        if (voiceChannel != null) {
-            event.guild.audioManager.openAudioConnection(voiceChannel)
-            manager.audioPlayer.playTrack(queue.poll().makeClone())
-        } else {
-            event.message.reply("В канал войди долбоеб, куда мне тебе играть музыку, в канаву матери?")
-                .queue()
-        }
-    }
-
-    private fun clear(
-        queue: Queue<AudioTrack>,
-        manager: MusicManager.GuildMusicManager,
-        event: MessageReceivedEvent
-    ) {
-        queue.clear()
-        manager.audioPlayer.stopTrack()
-        event.message.reply("Ок").queue()
-    }
-
-    private fun list(
-        queue: Queue<AudioTrack>,
-        event: MessageReceivedEvent
-    ) {
-        val duration = Duration.ofMillis(queue.sumOf { it.duration })
-        val durationMessage = "Длина треков в очереди ${duration.toMinutes()} м. ${duration.toSeconds() % 60} c.\n"
-        event.message.reply(durationMessage).queue()
-        event.message.reply(createButtons(queue, "remove")).queue()
-    }
-
-    private fun repeatOne(
-        manager: MusicManager.GuildMusicManager,
-        event: MessageReceivedEvent
-    ) {
-        manager.listener.repeatOne = manager.listener.repeatOne.not()
-        event.message.reply("Режим повтора одного трека ${manager.listener.repeatOne}").queue()
-    }
-
-    private fun skip(
-        queue: Queue<AudioTrack>,
-        manager: MusicManager.GuildMusicManager
-    ) {
-        if (queue.isNotEmpty()) {
-            manager.audioPlayer.playTrack(queue.poll().makeClone())
-        } else {
-            manager.audioPlayer.stopTrack()
-        }
+        return EventContext(event, queue, manager)
     }
 
     private fun removeButtonHandler(
@@ -251,47 +141,5 @@ class MainListener : ListenerAdapter() {
         event.reply("Играем ${track.info?.title}").queue()
     }
 
-    companion object {
-        fun createButtons(queue: Collection<AudioTrack>, prefix: String): MessageCreateData {
-            val messageCreateBuilder = MessageCreateBuilder()
-            queue.take(25).map {
-                Button.primary("$prefix|${it.identifier}", it.info.title.take(79))
-            }.chunked(5).forEach { messageCreateBuilder.addActionRow(it) }
-            return messageCreateBuilder.build()
-        }
-    }
 
-    class SearchLoadHandler(private val event: MessageReceivedEvent, queue: Queue<AudioTrack>) :
-        SingleTrackLoadHandler(queue, event) {
-
-        override fun playlistLoaded(playlist: AudioPlaylist) {
-            searchResults[event.guild.idLong] = playlist.tracks
-            event.message.reply(createButtons(playlist.tracks, "search")).queue()
-        }
-    }
-
-    open class SingleTrackLoadHandler(private val queue: Queue<AudioTrack>, private val event: MessageReceivedEvent) :
-        AudioLoadResultHandler {
-        override fun trackLoaded(track: AudioTrack) {
-            event.message.reply("Добавил ${track.info.title} в очередь.").queue()
-            queue.add(track)
-        }
-
-        override fun playlistLoaded(playlist: AudioPlaylist) {
-            if (playlist.isSearchResult) {
-                trackLoaded(playlist.tracks.first())
-                return
-            }
-            event.message.reply("Добавил ${playlist.tracks.size} песенок в очередь.").queue()
-            queue.addAll(playlist.tracks)
-        }
-
-        override fun noMatches() {
-            event.message.reply("Не нашел ничего").queue()
-        }
-
-        override fun loadFailed(exception: FriendlyException) {
-            event.message.reply("Хуйня какая-то, не работает: ${exception.message}").queue()
-        }
-    }
 }

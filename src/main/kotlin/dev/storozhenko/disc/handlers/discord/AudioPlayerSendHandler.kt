@@ -1,4 +1,4 @@
-package dev.storozhenko.disc
+package dev.storozhenko.disc.handlers.discord
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame

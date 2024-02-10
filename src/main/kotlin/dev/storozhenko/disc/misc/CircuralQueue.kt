@@ -1,4 +1,4 @@
-package dev.storozhenko.disc
+package dev.storozhenko.disc.misc
 
 import java.util.Queue
 import java.util.concurrent.atomic.AtomicInteger

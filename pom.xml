@@ -18,15 +18,14 @@
         <slf4j.version>2.0.9</slf4j.version>
         <logback-classic.version>1.4.14</logback-classic.version>
         <kotlin.version>1.9.21</kotlin.version>
-        <lavaplayer.version>1.3.78</lavaplayer.version>
-        <JDA.version>5.0.0-beta.18</JDA.version>
+        <lavaplayer.version>2.1.0</lavaplayer.version>
+        <JDA.version>5.0.0-beta.20</JDA.version>
     </properties>
 
     <repositories>
         <repository>
-            <id>dv8tion</id>
-            <name>m2-dv8tion</name>
-            <url>https://m2.dv8tion.net/releases</url>
+            <id>jitpack</id>
+            <url>https://jitpack.io</url>
         </repository>
         <repository>
             <id>mavenCentral</id>
@@ -105,7 +104,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.sedmelluq</groupId>
+            <groupId>dev.arbjerg</groupId>
             <artifactId>lavaplayer</artifactId>
             <version>${lavaplayer.version}</version>
         </dependency>

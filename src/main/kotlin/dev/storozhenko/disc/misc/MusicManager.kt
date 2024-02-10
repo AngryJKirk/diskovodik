@@ -1,4 +1,4 @@
-package dev.storozhenko.disc
+package dev.storozhenko.disc.misc
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
@@ -7,6 +7,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import dev.storozhenko.disc.handlers.discord.AudioPlayerSendHandler
 import net.dv8tion.jda.api.entities.Guild
 import java.util.Queue
 
