@@ -18,7 +18,7 @@
         <slf4j.version>2.0.9</slf4j.version>
         <logback-classic.version>1.4.14</logback-classic.version>
         <kotlin.version>1.9.21</kotlin.version>
-        <lavaplayer.version>2.1.0</lavaplayer.version>
+        <lavaplayer.version>1.4.3</lavaplayer.version>
         <JDA.version>5.0.0-beta.20</JDA.version>
     </properties>
 
@@ -104,8 +104,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>dev.arbjerg</groupId>
-            <artifactId>lavaplayer</artifactId>
+            <groupId>com.github.walkyst</groupId>
+            <artifactId>lavaplayer-fork</artifactId>
             <version>${lavaplayer.version}</version>
         </dependency>
         <dependency>
