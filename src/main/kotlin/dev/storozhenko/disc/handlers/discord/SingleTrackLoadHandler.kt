@@ -28,6 +28,9 @@ open class SingleTrackLoadHandler(private val queue: Queue<AudioTrack>, private 
     }
 
     override fun loadFailed(exception: FriendlyException) {
-        event.message.reply("Хуйня какая-то, не работает: ${exception.message}").queue()
+        event.message.reply(
+            "Хуйня какая-то, не работает: ${exception.message}. Инфа для джавистов: ${exception.cause?.message}\n" +
+                    exception.stackTrace.joinToString("\n")
+        ).queue()
     }
 }
