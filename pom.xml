@@ -19,7 +19,7 @@
         <logback-classic.version>1.4.14</logback-classic.version>
         <kotlin.version>1.9.21</kotlin.version>
         <lavaplayer.version>1.4.3</lavaplayer.version>
-        <JDA.version>5.0.0-beta.20</JDA.version>
+        <JDA.version>5.0.0-beta.21</JDA.version>
     </properties>
 
     <repositories>
@@ -112,6 +112,16 @@
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
             <version>${JDA.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
