@@ -1,15 +1,7 @@
 package dev.storozhenko.disc
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import dev.storozhenko.disc.handlers.Add
-import dev.storozhenko.disc.handlers.Clear
-import dev.storozhenko.disc.handlers.Help
-import dev.storozhenko.disc.handlers.PlayThat
-import dev.storozhenko.disc.handlers.RepeatOne
-import dev.storozhenko.disc.handlers.Search
-import dev.storozhenko.disc.handlers.SearchResults
-import dev.storozhenko.disc.handlers.Skip
-import dev.storozhenko.disc.handlers.Start
+import dev.storozhenko.disc.handlers.*
 import dev.storozhenko.disc.misc.CircularQueue
 import dev.storozhenko.disc.misc.EventContext
 import dev.storozhenko.disc.misc.MusicManager
@@ -21,7 +13,12 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.requests.GatewayIntent
-import java.util.Queue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
+
+@Suppress("unused")
+inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
 
 fun main() {
     val token = System.getenv()["DISCORD_TOKEN"] ?: throw IllegalStateException("DISCORD_TOKEN does not exist")
@@ -49,29 +46,34 @@ private val start = Start()
 val urlRegex = Regex("\\b((?:https?://|www\\.)\\S+)\\b")
 
 class MainListener : ListenerAdapter() {
+    private val log = getLogger()
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
+        try {
 
-        val queue = queues[event.guild?.idLong] ?: return
+            val queue = queues[event.guild?.idLong] ?: return
 
-        val (prefix, buttonId) = event.button.id?.split("|") ?: return
+            val (prefix, buttonId) = event.button.id?.split("|") ?: return
 
-        if (prefix == "search") {
-            searchButtonHandler(buttonId, event, queue)
-        }
+            if (prefix == "search") {
+                searchButtonHandler(buttonId, event, queue)
+            }
 
-        val track = queue.firstOrNull { it.identifier == buttonId }
+            val track = queue.firstOrNull { it.identifier == buttonId }
 
-        if (track == null) {
-            event.reply("Бля чет нет такого трека уже").queue()
-            return
-        }
+            if (track == null) {
+                event.reply("Бля чет нет такого трека уже").queue()
+                return
+            }
 
-        val guild = event.guild ?: return
-        if (prefix == "play") {
-            playButtonHandler(guild, queue, track, event)
-        }
-        if (prefix == "remove") {
-            removeButtonHandler(queue, buttonId, event, track)
+            val guild = event.guild ?: return
+            if (prefix == "play") {
+                playButtonHandler(guild, queue, track, event)
+            }
+            if (prefix == "remove") {
+                removeButtonHandler(queue, buttonId, event, track)
+            }
+        } catch (e: Exception) {
+            log.error("onButtonInteraction failed", e)
         }
     }
 
@@ -87,22 +89,27 @@ class MainListener : ListenerAdapter() {
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        if (event.message.author.isBot || event.message.author.isSystem) return
+        try {
 
-        val context = toContext(event)
-        val handler = when {
-            context.forCommand("!start") -> start::handle
-            context.forCommand("!clear") -> clear::handle
-            context.forCommand("!list") -> list::handle
-            context.forCommand("!repeat_one") -> repeatOne::handle
-            context.forCommand("!skip") -> skip::handle
-            context.forCommand("!add") -> add::handle
-            context.forCommand("!search") -> search::handle
-            context.forCommand("!play_that") -> playThat::handle
-            context.forCommand("!help") -> help::handle
-            else -> return
+            if (event.message.author.isBot || event.message.author.isSystem) return
+
+            val context = toContext(event)
+            val handler = when {
+                context.forCommand("!start") -> start::handle
+                context.forCommand("!clear") -> clear::handle
+                context.forCommand("!list") -> list::handle
+                context.forCommand("!repeat_one") -> repeatOne::handle
+                context.forCommand("!skip") -> skip::handle
+                context.forCommand("!add") -> add::handle
+                context.forCommand("!search") -> search::handle
+                context.forCommand("!play_that") -> playThat::handle
+                context.forCommand("!help") -> help::handle
+                else -> return
+            }
+            handler(context)
+        } catch (e: Exception) {
+            log.error("onMessageReceived failed", e)
         }
-        handler(context)
     }
 
     private fun toContext(event: MessageReceivedEvent): EventContext {

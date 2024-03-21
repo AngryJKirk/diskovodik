@@ -14,8 +14,8 @@ object SearchResults {
     val searchResults: MutableMap<Long, Collection<AudioTrack>> = mutableMapOf()
 }
 
-class Search(private val musicManager: MusicManager) : CommandHandler {
-    override fun handle(context: EventContext) {
+class Search(private val musicManager: MusicManager) : CommandHandler() {
+    override fun handleInternal(context: EventContext) {
         var query = context.event.message.contentRaw.substringAfter(" ")
         if (!urlRegex.matches(query)) {
             query = "ytsearch:$query"

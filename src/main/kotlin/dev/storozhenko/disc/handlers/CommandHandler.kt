@@ -1,9 +1,15 @@
 package dev.storozhenko.disc.handlers
 
+import dev.storozhenko.disc.getLogger
 import dev.storozhenko.disc.misc.EventContext
 
-interface CommandHandler {
+abstract class CommandHandler {
 
-    fun handle(context: EventContext)
+    private val log = getLogger()
+    fun handle(context: EventContext) {
+        log.info("Handle: ${this::class.simpleName}, message: ${context.content}")
+    }
+
+    abstract fun handleInternal(context: EventContext)
 
 }

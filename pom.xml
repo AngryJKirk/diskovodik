@@ -20,6 +20,7 @@
         <kotlin.version>1.9.21</kotlin.version>
         <lavaplayer.version>1.4.3</lavaplayer.version>
         <JDA.version>5.0.0-beta.21</JDA.version>
+        <logback_version>1.4.5</logback_version>
     </properties>
 
     <repositories>
@@ -103,6 +104,11 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback_version}</version>
+        </dependency>
         <dependency>
             <groupId>com.github.walkyst</groupId>
             <artifactId>lavaplayer-fork</artifactId>

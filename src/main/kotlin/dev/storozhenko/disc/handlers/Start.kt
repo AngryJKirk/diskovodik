@@ -3,8 +3,8 @@ package dev.storozhenko.disc.handlers
 import dev.storozhenko.disc.misc.EventContext
 
 
-class Start : CommandHandler {
-    override fun handle(context: EventContext) {
+class Start : CommandHandler() {
+    override fun handleInternal(context: EventContext) {
         val event = context.event
         if (context.queue.isEmpty()) {
             event.message.reply("песни добавь еблан").queue()

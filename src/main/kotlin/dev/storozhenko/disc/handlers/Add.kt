@@ -5,9 +5,9 @@ import dev.storozhenko.disc.misc.MusicManager
 import dev.storozhenko.disc.handlers.discord.SingleTrackLoadHandler
 import dev.storozhenko.disc.urlRegex
 
-class Add(private val musicManager: MusicManager) : CommandHandler {
+class Add(private val musicManager: MusicManager) : CommandHandler() {
 
-    override fun handle(context: EventContext) {
+    override fun handleInternal(context: EventContext) {
         context.content
             .replace("!add ", "")
             .split(",")

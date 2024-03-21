@@ -2,8 +2,8 @@ package dev.storozhenko.disc.handlers
 
 import dev.storozhenko.disc.misc.EventContext
 
-class Help : CommandHandler {
-    override fun handle(context: EventContext) {
+class Help : CommandHandler() {
+    override fun handleInternal(context: EventContext) {
         context.event.message.reply(
             """
                     !add УРЛ добавляет песню или плейлист с ютуба, можно просто текстом
