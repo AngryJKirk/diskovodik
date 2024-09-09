@@ -19,7 +19,7 @@
         <logback-classic.version>1.4.14</logback-classic.version>
         <kotlin.version>2.0.0</kotlin.version>
         <lavaplayer.version>2.2.1</lavaplayer.version>
-        <JDA.version>5.0.1</JDA.version>
+        <JDA.version>5.1.0</JDA.version>
         <logback_version>1.5.6</logback_version>
     </properties>
 
