@@ -8,4 +8,6 @@ services:
     restart: always
     environment:
       - DISCORD_TOKEN
+      - PO_TOKEN
+      - VISITOR_DATA
 
