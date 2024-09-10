@@ -7,12 +7,23 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import dev.lavalink.youtube.YoutubeAudioSourceManager
+import dev.lavalink.youtube.clients.Web
 import dev.storozhenko.disc.handlers.discord.AudioPlayerSendHandler
 import net.dv8tion.jda.api.entities.Guild
 import java.util.Queue
 
-class MusicManager {
+class MusicManager(
+    private val poToken: String,
+    private val visitorData: String
+) {
     val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
+        .apply {
+            registerSourceManager(YoutubeAudioSourceManager())
+            @Suppress("DEPRECATION")
+            AudioSourceManagers.registerRemoteSources(this, com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager::class.java)
+            Web.setPoTokenAndVisitorData(poToken, visitorData)
+        }
     private val musicManagers: MutableMap<Long, GuildMusicManager> = HashMap()
 
     init {

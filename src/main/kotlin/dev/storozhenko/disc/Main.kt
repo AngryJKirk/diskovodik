@@ -1,7 +1,15 @@
 package dev.storozhenko.disc
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import dev.storozhenko.disc.handlers.*
+import dev.storozhenko.disc.handlers.Add
+import dev.storozhenko.disc.handlers.Clear
+import dev.storozhenko.disc.handlers.Help
+import dev.storozhenko.disc.handlers.PlayThat
+import dev.storozhenko.disc.handlers.RepeatOne
+import dev.storozhenko.disc.handlers.Search
+import dev.storozhenko.disc.handlers.SearchResults
+import dev.storozhenko.disc.handlers.Skip
+import dev.storozhenko.disc.handlers.Start
 import dev.storozhenko.disc.misc.CircularQueue
 import dev.storozhenko.disc.misc.EventContext
 import dev.storozhenko.disc.misc.MusicManager
@@ -15,13 +23,13 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.Queue
 
 @Suppress("unused")
 inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
 
 fun main() {
-    val token = System.getenv()["DISCORD_TOKEN"] ?: throw IllegalStateException("DISCORD_TOKEN does not exist")
+    val token = getEnv("DISCORD_TOKEN")
 
     val jda = JDABuilder.createDefault(token)
         .enableIntents(GatewayIntent.MESSAGE_CONTENT)
@@ -32,7 +40,10 @@ fun main() {
 }
 
 private val queues: MutableMap<Long, Queue<AudioTrack>> = mutableMapOf()
-private val musicManager = MusicManager()
+private val musicManager = MusicManager(
+    getEnv("PO_TOKEN"),
+    getEnv("VISITOR_DATA"),
+)
 
 private val add = Add(musicManager)
 private val search = Search(musicManager)
@@ -44,7 +55,7 @@ private val repeatOne = RepeatOne()
 private val skip = Skip()
 private val start = Start()
 val urlRegex = Regex("\\b((?:https?://|www\\.)\\S+)\\b")
-
+private fun getEnv(name: String) = System.getenv()[name] ?: throw IllegalStateException("$name does not exist")
 class MainListener : ListenerAdapter() {
     private val log = getLogger()
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
