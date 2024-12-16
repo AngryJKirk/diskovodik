@@ -21,7 +21,7 @@
         <lavaplayer.version>2.2.2</lavaplayer.version>
         <JDA.version>5.2.1</JDA.version>
         <logback_version>1.5.6</logback_version>
-        <lavayoutube.version>1.9.0</lavayoutube.version>
+        <lavayoutube.version>d561a5ac43d0538363c085700ce640b09eda9455-SNAPSHOT</lavayoutube.version>
     </properties>
 
     <repositories>
