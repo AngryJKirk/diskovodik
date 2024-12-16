@@ -18,10 +18,10 @@
         <slf4j.version>2.0.9</slf4j.version>
         <logback-classic.version>1.4.14</logback-classic.version>
         <kotlin.version>2.0.0</kotlin.version>
-        <lavaplayer.version>2.2.1</lavaplayer.version>
-        <JDA.version>5.1.0</JDA.version>
+        <lavaplayer.version>2.2.2</lavaplayer.version>
+        <JDA.version>5.2.1</JDA.version>
         <logback_version>1.5.6</logback_version>
-        <lavayoutube.version>1.7.2</lavayoutube.version>
+        <lavayoutube.version>1.8.3</lavayoutube.version>
     </properties>
 
     <repositories>
