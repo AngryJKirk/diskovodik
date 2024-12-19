@@ -8,6 +8,9 @@ import dev.storozhenko.disc.misc.MusicManager
 import dev.storozhenko.disc.misc.createButtons
 import dev.storozhenko.disc.urlRegex
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import java.util.Queue
 
 object SearchResults {
@@ -24,6 +27,11 @@ class Search(private val musicManager: MusicManager) : CommandHandler() {
             context.manager, query,
             SearchLoadHandler(context.event, context.queue)
         )
+    }
+
+    override fun command(): SlashCommandData {
+        return Commands.slash("search", "Ищет и добавляет песню")
+            .addOption(OptionType.STRING, "query", "Текст для поиска", true)
     }
 }
 

@@ -2,6 +2,7 @@ package dev.storozhenko.disc.handlers
 
 import dev.storozhenko.disc.getLogger
 import dev.storozhenko.disc.misc.EventContext
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 
 abstract class CommandHandler {
 
@@ -12,5 +13,7 @@ abstract class CommandHandler {
     }
 
     abstract fun handleInternal(context: EventContext)
+
+    abstract fun command(): SlashCommandData
 
 }

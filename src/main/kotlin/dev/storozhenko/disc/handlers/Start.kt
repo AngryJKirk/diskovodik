@@ -1,6 +1,8 @@
 package dev.storozhenko.disc.handlers
 
 import dev.storozhenko.disc.misc.EventContext
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 
 
 class Start : CommandHandler() {
@@ -20,5 +22,9 @@ class Start : CommandHandler() {
             event.reply("В канал войди, долбоеб, куда мне тебе играть музыку, в канаву матери?")
                 .queue()
         }
+    }
+
+    override fun command(): SlashCommandData {
+        return Commands.slash("start", "Начинает играть музыку")
     }
 }

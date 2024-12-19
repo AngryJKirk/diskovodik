@@ -3,6 +3,7 @@ package dev.storozhenko.disc
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import dev.storozhenko.disc.handlers.Add
 import dev.storozhenko.disc.handlers.Clear
+import dev.storozhenko.disc.handlers.CommandHandler
 import dev.storozhenko.disc.handlers.Help
 import dev.storozhenko.disc.handlers.PlayThat
 import dev.storozhenko.disc.handlers.RepeatOne
@@ -20,8 +21,6 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger
@@ -30,6 +29,27 @@ import java.util.Queue
 
 @Suppress("unused")
 inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
+
+private val queues: MutableMap<Long, Queue<AudioTrack>> = mutableMapOf()
+private val musicManager = MusicManager(
+    getEnv("PO_TOKEN"),
+    getEnv("VISITOR_DATA"),
+)
+
+
+private val commandHandlers = listOf(
+    Add(musicManager),
+    Search(musicManager),
+    Clear(),
+    dev.storozhenko.disc.handlers.List(),
+    PlayThat(),
+    RepeatOne(),
+    Skip(),
+    Start(),
+    Help()
+)
+private val commandHandlersMap = commandHandlers.associateBy { it.command().name }
+
 
 fun main() {
     val token = getEnv("DISCORD_TOKEN")
@@ -40,52 +60,25 @@ fun main() {
         .setActivity(Activity.listening("Music"))
         .build()
     jda.awaitReady()
-    jda.updateCommands()
-        .addCommands(
-            Commands.slash("add", "Добавляет песню или плейлист с YouTube")
-                .addOption(OptionType.STRING, "url", "Ссылка или текст", true),
-            Commands.slash("start", "Начинает играть музыку"),
-            Commands.slash("skip", "Пропускает текущий трек"),
-            Commands.slash("clear", "Очищает очередь и останавливает воспроизведение"),
-            Commands.slash("list", "Показывает текущую очередь песен с удалением по нажатию"),
-            Commands.slash("help", "Помогите"),
-            Commands.slash("repeat_one", "Ставит репит текущего трека"),
-            Commands.slash("play_that", "Проигрывает очередь"),
-            Commands.slash("search", "Ищет и добавляет песню")
-                .addOption(OptionType.STRING, "query", "Текст для поиска", true)
-        )
-        .queue()
-
+    jda.updateCommands().addCommands(commandHandlers.map(CommandHandler::command)).queue()
 }
 
-private val queues: MutableMap<Long, Queue<AudioTrack>> = mutableMapOf()
-private val musicManager = MusicManager(
-    getEnv("PO_TOKEN"),
-    getEnv("VISITOR_DATA"),
-)
 
-private val add = Add(musicManager)
-private val search = Search(musicManager)
-private val clear = Clear()
-private val help = Help()
-private val list = dev.storozhenko.disc.handlers.List()
-private val playThat = PlayThat()
-private val repeatOne = RepeatOne()
-private val skip = Skip()
-private val start = Start()
 val urlRegex = Regex("\\b((?:https?://|www\\.)\\S+)\\b")
 private fun getEnv(name: String) = System.getenv()[name] ?: throw IllegalStateException("$name does not exist")
 class MainListener : ListenerAdapter() {
     private val log = getLogger()
+
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
         try {
 
             val queue = queues[event.guild?.idLong] ?: return
-
             val (prefix, buttonId) = event.button.id?.split("|") ?: return
+            val guild = event.guild ?: return
 
             if (prefix == "search") {
-                searchButtonHandler(buttonId, event, queue)
+                searchButtonHandler(guild, buttonId, event, queue)
+                return
             }
 
             val track = queue.firstOrNull { it.identifier == buttonId }
@@ -95,20 +88,23 @@ class MainListener : ListenerAdapter() {
                 return
             }
 
-            val guild = event.guild ?: return
-            if (prefix == "play") {
-                playButtonHandler(guild, queue, track, event)
+            when (prefix) {
+                "play" -> playButtonHandler(guild, queue, track, event)
+                "remove" -> removeButtonHandler(queue, buttonId, event, track)
             }
-            if (prefix == "remove") {
-                removeButtonHandler(queue, buttonId, event, track)
-            }
+
         } catch (e: Exception) {
             log.error("onButtonInteraction failed", e)
         }
     }
 
-    private fun searchButtonHandler(buttonId: String, event: ButtonInteractionEvent, queue: Queue<AudioTrack>) {
-        val tracks = SearchResults.searchResults[event.guild?.idLong] ?: return
+    private fun searchButtonHandler(
+        guild: Guild,
+        buttonId: String,
+        event: ButtonInteractionEvent,
+        queue: Queue<AudioTrack>
+    ) {
+        val tracks = SearchResults.searchResults[guild.idLong] ?: return
         val track = tracks.find { it.identifier == buttonId }
         if (track == null) {
             event.reply("Чет пошло не так").queue()
@@ -122,28 +118,15 @@ class MainListener : ListenerAdapter() {
         try {
             if (event.user.isBot) return
 
-            val handler = when (event.name) {
-                "start" -> start::handle
-                "clear" -> clear::handle
-                "list" -> list::handle
-                "repeat_one" -> repeatOne::handle
-                "skip" -> skip::handle
-                "add" -> add::handle
-                "search" -> search::handle
-                "play_that" -> playThat::handle
-                "help" -> help::handle
-                else -> {
-                    event.reply("Неизвестная команда: ${event.name}").setEphemeral(true).queue()
-                    return
-                }
+            val handler = commandHandlersMap[event.name]
+            if (handler == null) {
+                event.reply("Unknown command: ${event.name}").setEphemeral(true).queue()
+                return
             }
-            val context = toContext(event)
-            handler(context)
+            handler.handle(toContext(event))
         } catch (e: Exception) {
             log.error("onSlashCommandInteraction failed", e)
         }
-
-
     }
 
     private fun toContext(event: SlashCommandInteractionEvent): EventContext {
@@ -165,7 +148,6 @@ class MainListener : ListenerAdapter() {
             val updatedActionRows = event.message.actionRows.map { actionRow ->
                 ActionRow.of(actionRow.buttons.filterNot { it.id == event.button.id })
             }
-
             event.message.editMessageComponents(updatedActionRows).queue()
         } else {
             event.reply("Чет не удалилось").queue()
