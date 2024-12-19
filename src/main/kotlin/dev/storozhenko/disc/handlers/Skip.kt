@@ -9,5 +9,6 @@ class Skip : CommandHandler() {
         } else {
             context.manager.audioPlayer.stopTrack()
         }
+        context.event.reply("Скипаем").setEphemeral(true).queue()
     }
 }

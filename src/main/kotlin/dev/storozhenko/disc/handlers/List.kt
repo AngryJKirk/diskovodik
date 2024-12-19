@@ -9,8 +9,8 @@ class List : CommandHandler() {
     override fun handleInternal(context: EventContext) {
         val duration = Duration.ofMillis(context.queue.sumOf { it.duration })
         val durationMessage = "Длина треков в очереди ${toText(duration)}\n"
-        context.event.message.reply(durationMessage).queue()
-        context.event.message.reply(createButtons(context.queue, "remove")).queue()
+        context.event.reply(durationMessage).queue()
+        context.event.reply(createButtons(context.queue, "remove")).queue()
     }
 
     private fun toText(duration: Duration) =

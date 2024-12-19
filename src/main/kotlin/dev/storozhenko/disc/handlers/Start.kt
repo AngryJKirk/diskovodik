@@ -7,15 +7,17 @@ class Start : CommandHandler() {
     override fun handleInternal(context: EventContext) {
         val event = context.event
         if (context.queue.isEmpty()) {
-            event.message.reply("песни добавь, еблан").queue()
+            event.reply("песни добавь, еблан").queue()
             return
         }
         val voiceChannel = event.member?.voiceState?.channel
         if (voiceChannel != null) {
-            event.guild.audioManager.openAudioConnection(voiceChannel)
+            val guild = event.guild ?: throw RuntimeException("guild is null")
+            guild.audioManager.openAudioConnection(voiceChannel)
             context.manager.audioPlayer.playTrack(context.queue.poll().makeClone())
+            context.event.reply("Стартуем").setEphemeral(true).queue()
         } else {
-            event.message.reply("В канал войди, долбоеб, куда мне тебе играть музыку, в канаву матери?")
+            event.reply("В канал войди, долбоеб, куда мне тебе играть музыку, в канаву матери?")
                 .queue()
         }
     }

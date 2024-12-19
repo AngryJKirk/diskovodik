@@ -8,6 +8,6 @@ class RepeatOne : CommandHandler() {
     override fun handleInternal(context: EventContext) {
         context.manager.listener.repeatOne = context.manager.listener.repeatOne.not()
         val newState = context.manager.listener.repeatOne.friendly().bold()
-        context.event.message.reply("Режим повтора одного трека $newState").queue()
+        context.event.reply("Режим повтора одного трека $newState").queue()
     }
 }

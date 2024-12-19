@@ -17,9 +17,11 @@ import dev.storozhenko.disc.misc.bold
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger
@@ -38,6 +40,22 @@ fun main() {
         .setActivity(Activity.listening("Music"))
         .build()
     jda.awaitReady()
+    jda.updateCommands()
+        .addCommands(
+            Commands.slash("add", "Добавляет песню или плейлист с YouTube")
+                .addOption(OptionType.STRING, "url", "Ссылка или текст", true),
+            Commands.slash("start", "Начинает играть музыку"),
+            Commands.slash("skip", "Пропускает текущий трек"),
+            Commands.slash("clear", "Очищает очередь и останавливает воспроизведение"),
+            Commands.slash("list", "Показывает текущую очередь песен с удалением по нажатию"),
+            Commands.slash("help", "Помогите"),
+            Commands.slash("repeat_one", "Ставит репит текущего трека"),
+            Commands.slash("play_that", "Проигрывает очередь"),
+            Commands.slash("search", "Ищет и добавляет песню")
+                .addOption(OptionType.STRING, "query", "Текст для поиска", true)
+        )
+        .queue()
+
 }
 
 private val queues: MutableMap<Long, Queue<AudioTrack>> = mutableMapOf()
@@ -100,33 +118,38 @@ class MainListener : ListenerAdapter() {
         event.reply("Добавил ${track.info.title.bold()} в очередь").queue()
     }
 
-    override fun onMessageReceived(event: MessageReceivedEvent) {
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         try {
+            if (event.user.isBot) return
 
-            if (event.message.author.isBot || event.message.author.isSystem) return
-
-            val context = toContext(event)
-            val handler = when {
-                context.forCommand("!start") -> start::handle
-                context.forCommand("!clear") -> clear::handle
-                context.forCommand("!list") -> list::handle
-                context.forCommand("!repeat_one") -> repeatOne::handle
-                context.forCommand("!skip") -> skip::handle
-                context.forCommand("!add") -> add::handle
-                context.forCommand("!search") -> search::handle
-                context.forCommand("!play_that") -> playThat::handle
-                context.forCommand("!help") -> help::handle
-                else -> return
+            val handler = when (event.name) {
+                "start" -> start::handle
+                "clear" -> clear::handle
+                "list" -> list::handle
+                "repeat_one" -> repeatOne::handle
+                "skip" -> skip::handle
+                "add" -> add::handle
+                "search" -> search::handle
+                "play_that" -> playThat::handle
+                "help" -> help::handle
+                else -> {
+                    event.reply("Неизвестная команда: ${event.name}").setEphemeral(true).queue()
+                    return
+                }
             }
+            val context = toContext(event)
             handler(context)
         } catch (e: Exception) {
-            log.error("onMessageReceived failed", e)
+            log.error("onSlashCommandInteraction failed", e)
         }
+
+
     }
 
-    private fun toContext(event: MessageReceivedEvent): EventContext {
-        val queue = queues.computeIfAbsent(event.guild.idLong) { _ -> CircularQueue() }
-        val manager = musicManager.getGuildMusicManager(event.guild, queue)
+    private fun toContext(event: SlashCommandInteractionEvent): EventContext {
+        val guild = event.guild ?: throw RuntimeException("Event is missing guild, not supported")
+        val queue = queues.computeIfAbsent(guild.idLong) { _ -> CircularQueue() }
+        val manager = musicManager.getGuildMusicManager(guild, queue)
         return EventContext(event, queue, manager)
     }
 
@@ -159,6 +182,5 @@ class MainListener : ListenerAdapter() {
         manager.audioPlayer.playTrack(track.makeClone())
         event.reply("Играем ${track.info?.title?.bold()}").queue()
     }
-
 
 }

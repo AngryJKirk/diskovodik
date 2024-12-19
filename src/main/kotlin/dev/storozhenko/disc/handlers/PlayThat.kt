@@ -5,6 +5,6 @@ import dev.storozhenko.disc.misc.createButtons
 
 class PlayThat : CommandHandler() {
     override fun handleInternal(context: EventContext) {
-        context.event.message.reply(createButtons(context.queue, "play")).queue()
+        context.event.reply(createButtons(context.queue, "play")).queue()
     }
 }

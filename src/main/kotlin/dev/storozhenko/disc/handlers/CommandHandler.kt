@@ -7,7 +7,7 @@ abstract class CommandHandler {
 
     private val log = getLogger()
     fun handle(context: EventContext) {
-        log.info("Handle: ${this::class.simpleName}, message: ${context.content}")
+        log.info("Handle: ${this::class.simpleName}, message: ${context.event.options}")
         handleInternal(context)
     }
 

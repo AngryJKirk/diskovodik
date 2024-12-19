@@ -7,14 +7,15 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import dev.storozhenko.disc.getLogger
 import dev.storozhenko.disc.misc.bold
 import dev.storozhenko.disc.misc.spoiler
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.*
 
-open class SingleTrackLoadHandler(private val queue: Queue<AudioTrack>, private val event: MessageReceivedEvent) :
+open class SingleTrackLoadHandler(private val queue: Queue<AudioTrack>, private val event: SlashCommandInteractionEvent) :
     AudioLoadResultHandler {
     private val log = getLogger()
     override fun trackLoaded(track: AudioTrack) {
-        event.message.reply("Добавил ${track.info.title.bold()} в очередь.").queue()
+        event.reply("Добавил ${track.info.title.bold()} в очередь.").queue()
         queue.add(track)
     }
 
@@ -25,7 +26,7 @@ open class SingleTrackLoadHandler(private val queue: Queue<AudioTrack>, private 
                 trackLoaded(playlist.tracks.first())
                 return
             }
-            event.message.reply("Добавил ${playlist.tracks.size.toString().bold()} песенок в очередь.").queue()
+            event.reply("Добавил ${playlist.tracks.size.toString().bold()} песенок в очередь.").queue()
             queue.addAll(playlist.tracks)
         } catch (e: Exception) {
             log.error("playlistLoaded failed", e)
@@ -33,12 +34,12 @@ open class SingleTrackLoadHandler(private val queue: Queue<AudioTrack>, private 
     }
 
     override fun noMatches() {
-        event.message.reply("Не нашел ничего").queue()
+        event.reply("Не нашел ничего").queue()
     }
 
     override fun loadFailed(exception: FriendlyException) {
         log.error("Search has failed", exception)
-        event.message.reply(
+        event.reply(
             "Хуйня какая-то, не работает: ${exception.message}. Инфа для джавистов:\n" +
                     (exception.cause?.message?.spoiler() + "\n" + exception.cause?.stackTrace?.joinToString("\n")).spoiler()
         ).queue()

@@ -1,15 +1,15 @@
 package dev.storozhenko.disc.handlers
 
+import dev.storozhenko.disc.handlers.discord.SingleTrackLoadHandler
 import dev.storozhenko.disc.misc.EventContext
 import dev.storozhenko.disc.misc.MusicManager
-import dev.storozhenko.disc.handlers.discord.SingleTrackLoadHandler
 import dev.storozhenko.disc.urlRegex
 
 class Add(private val musicManager: MusicManager) : CommandHandler() {
 
     override fun handleInternal(context: EventContext) {
-        context.content
-            .replace("!add ", "")
+        val url = context.event.getOption("url") ?: throw RuntimeException("Url cannot be null")
+        url.asString
             .split(",")
             .map { trackSearch -> if (urlRegex.matches(trackSearch).not()) "ytsearch:$trackSearch" else trackSearch }
             .forEach { trackSearch ->
