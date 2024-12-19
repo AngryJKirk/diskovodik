@@ -13,3 +13,14 @@ fun createButtons(queue: Collection<AudioTrack>, prefix: String): MessageCreateD
     }.chunked(5).forEach { messageCreateBuilder.addActionRow(it) }
     return messageCreateBuilder.build()
 }
+
+fun String.bold(): String = "**$this**"
+fun String.italic(): String = "*$this*"
+fun String.underline(): String = "__$this"
+fun String.strikethrough(): String = "~~$this~~"
+fun String.inlineCode(): String = "`$this`"
+fun String.spoiler(): String = "||$this||"
+
+fun Boolean.friendly(): String {
+    return if(this) "включен" else "выключен"
+}

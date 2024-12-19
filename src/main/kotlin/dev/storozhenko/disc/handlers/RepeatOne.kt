@@ -1,11 +1,13 @@
 package dev.storozhenko.disc.handlers
 
 import dev.storozhenko.disc.misc.EventContext
+import dev.storozhenko.disc.misc.bold
+import dev.storozhenko.disc.misc.friendly
 
 class RepeatOne : CommandHandler() {
     override fun handleInternal(context: EventContext) {
         context.manager.listener.repeatOne = context.manager.listener.repeatOne.not()
-        context.event.message.reply("Режим повтора одного трека ${context.manager.listener.repeatOne}")
-            .queue()
+        val newState = context.manager.listener.repeatOne.friendly().bold()
+        context.event.message.reply("Режим повтора одного трека $newState").queue()
     }
 }

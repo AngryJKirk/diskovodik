@@ -13,6 +13,7 @@ import dev.storozhenko.disc.handlers.Start
 import dev.storozhenko.disc.misc.CircularQueue
 import dev.storozhenko.disc.misc.EventContext
 import dev.storozhenko.disc.misc.MusicManager
+import dev.storozhenko.disc.misc.bold
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
@@ -72,7 +73,7 @@ class MainListener : ListenerAdapter() {
             val track = queue.firstOrNull { it.identifier == buttonId }
 
             if (track == null) {
-                event.reply("Бля чет нет такого трека уже").queue()
+                event.reply("Бля, чет нет такого трека уже").queue()
                 return
             }
 
@@ -96,7 +97,7 @@ class MainListener : ListenerAdapter() {
             return
         }
         queue.add(track)
-        event.reply("Добавил ${track.info.title} в очередь").queue()
+        event.reply("Добавил ${track.info.title.bold()} в очередь").queue()
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {

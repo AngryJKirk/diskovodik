@@ -7,7 +7,7 @@ class Start : CommandHandler() {
     override fun handleInternal(context: EventContext) {
         val event = context.event
         if (context.queue.isEmpty()) {
-            event.message.reply("песни добавь еблан").queue()
+            event.message.reply("песни добавь, еблан").queue()
             return
         }
         val voiceChannel = event.member?.voiceState?.channel
@@ -15,7 +15,7 @@ class Start : CommandHandler() {
             event.guild.audioManager.openAudioConnection(voiceChannel)
             context.manager.audioPlayer.playTrack(context.queue.poll().makeClone())
         } else {
-            event.message.reply("В канал войди долбоеб, куда мне тебе играть музыку, в канаву матери?")
+            event.message.reply("В канал войди, долбоеб, куда мне тебе играть музыку, в канаву матери?")
                 .queue()
         }
     }
