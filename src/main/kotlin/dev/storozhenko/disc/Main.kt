@@ -138,7 +138,7 @@ class MainListener : ListenerAdapter() {
     ) {
         val result = queue.removeIf { it.identifier == buttonId }
         if (result) {
-            event.reply("Удалил ${track.info?.title}").queue()
+            event.reply("Удалил ${track.info?.title?.bold()}").queue()
             val updatedActionRows = event.message.actionRows.map { actionRow ->
                 ActionRow.of(actionRow.buttons.filterNot { it.id == event.button.id })
             }
@@ -157,7 +157,7 @@ class MainListener : ListenerAdapter() {
     ) {
         val manager = musicManager.getGuildMusicManager(guild, queue)
         manager.audioPlayer.playTrack(track.makeClone())
-        event.reply("Играем ${track.info?.title}").queue()
+        event.reply("Играем ${track.info?.title?.bold()}").queue()
     }
 
 
