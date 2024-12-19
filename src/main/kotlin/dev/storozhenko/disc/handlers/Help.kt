@@ -16,6 +16,8 @@ class Help : CommandHandler() {
                     ${"/play_that".inlineCode()} показывает очередь которую можно проиграть
                     ${"/search".inlineCode()} позволяет искать и добавлять песни по запросу
                 """.trimIndent()
-        ).queue()
+        )
+            .setEphemeral(true)
+            .queue()
     }
 }
