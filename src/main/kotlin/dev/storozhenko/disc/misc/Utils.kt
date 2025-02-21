@@ -6,11 +6,12 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 
 
-fun createButtons(queue: Collection<AudioTrack>, prefix: String): MessageCreateData {
+fun createButtons(queue: Collection<AudioTrack>, prefix: String, customize: MessageCreateBuilder.() -> Unit = {}): MessageCreateData {
     val messageCreateBuilder = MessageCreateBuilder()
     queue.take(25).map {
         Button.primary("$prefix|${it.identifier}", it.info.title.take(79))
     }.chunked(5).forEach { messageCreateBuilder.addActionRow(it) }
+    customize.invoke(messageCreateBuilder)
     return messageCreateBuilder.build()
 }
 

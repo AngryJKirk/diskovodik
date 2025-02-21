@@ -11,8 +11,8 @@ class List : CommandHandler() {
     override fun handleInternal(context: EventContext) {
         val duration = Duration.ofMillis(context.queue.sumOf { it.duration })
         val durationMessage = "Длина треков в очереди ${toText(duration)}\n"
-        context.event.reply(durationMessage).queue()
-        context.event.reply(createButtons(context.queue, "remove")).queue()
+        val message = createButtons(context.queue, "remove") { addContent(durationMessage) }
+        context.event.reply(message).queue()
     }
 
     override fun command(): SlashCommandData {
