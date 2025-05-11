@@ -22,7 +22,7 @@
         <JDA.version>5.2.3</JDA.version>
         <logback_version>1.5.6</logback_version>
 <!--        https://maven.lavalink.dev/#/-->
-        <lavayoutube.version>aa35b841ec3ad4f4865e4bcd4d1e6c539b822687-SNAPSHOT</lavayoutube.version>
+        <lavayoutube.version>1.13.2</lavayoutube.version>
     </properties>
 
     <repositories>
