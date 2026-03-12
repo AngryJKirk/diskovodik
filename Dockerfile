@@ -1,4 +1,4 @@
-FROM maven:3.8.4-openjdk-17-slim AS build
+FROM maven:3.9-eclipse-temurin-25 AS build
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY ./src ./src
 
 RUN mvn package -DskipTests
 
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:25-jdk
 
 COPY --from=build /app/target/diskovodik.jar /usr/local/lib/diskovodik.jar
 

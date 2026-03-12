@@ -16,12 +16,13 @@ import dev.storozhenko.disc.misc.EventContext
 import dev.storozhenko.disc.misc.MusicManager
 import dev.storozhenko.disc.misc.bold
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,7 +55,13 @@ private val commandHandlersMap = commandHandlers.associateBy { it.command().name
 fun main() {
     val token = getEnv("DISCORD_TOKEN")
 
+    val daveSessionFactory = club.minnced.discord.jdave.interop.JDaveSessionFactory()
+
     val jda = JDABuilder.createDefault(token)
+        .setAudioModuleConfig(
+            net.dv8tion.jda.api.audio.AudioModuleConfig()
+                .withDaveSessionFactory(daveSessionFactory)
+        )
         .enableIntents(GatewayIntent.MESSAGE_CONTENT)
         .addEventListeners(MainListener())
         .setActivity(Activity.listening("Music"))
@@ -73,7 +80,9 @@ class MainListener : ListenerAdapter() {
         try {
 
             val queue = queues[event.guild?.idLong] ?: return
-            val (prefix, buttonId) = event.button.id?.split("|") ?: return
+            val parts = event.componentId.split("|")
+            if (parts.size != 2) return
+            val (prefix, buttonId) = parts
             val guild = event.guild ?: return
 
             if (prefix == "search") {
@@ -145,8 +154,8 @@ class MainListener : ListenerAdapter() {
         val result = queue.removeIf { it.identifier == buttonId }
         if (result) {
             event.reply("Удалил ${track.info?.title?.bold()}").queue()
-            val updatedActionRows = event.message.actionRows.map { actionRow ->
-                ActionRow.of(actionRow.buttons.filterNot { it.id == event.button.id })
+            val updatedActionRows = event.message.components.mapNotNull { it as? ActionRow }.map { actionRow ->
+                ActionRow.of(actionRow.components.filterNot { (it as? Button)?.customId == event.componentId })
             }
             event.message.editMessageComponents(updatedActionRows).queue()
         } else {

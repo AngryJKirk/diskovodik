@@ -14,15 +14,15 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
-        <kotlin.compiler.jvmTarget>16</kotlin.compiler.jvmTarget>
+        <kotlin.compiler.jvmTarget>24</kotlin.compiler.jvmTarget>
         <slf4j.version>2.0.9</slf4j.version>
         <logback-classic.version>1.4.14</logback-classic.version>
-        <kotlin.version>2.0.0</kotlin.version>
-        <lavaplayer.version>2.2.2</lavaplayer.version>
-        <JDA.version>5.2.3</JDA.version>
-        <logback_version>1.5.6</logback_version>
+        <kotlin.version>2.2.0</kotlin.version>
+        <lavaplayer.version>2.2.6</lavaplayer.version>
+        <JDA.version>6.3.0</JDA.version>
+        <logback_version>1.5.18</logback_version>
 <!--        https://maven.lavalink.dev/#/-->
-        <lavayoutube.version>1.13.2</lavayoutube.version>
+        <lavayoutube.version>1.17.0</lavayoutube.version>
     </properties>
 
     <repositories>
@@ -51,7 +51,7 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>2.0.0</version>
+                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -107,14 +107,24 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>25</source>
+                    <target>25</target>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>club.minnced</groupId>
+            <artifactId>jdave-api</artifactId>
+            <version>0.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>club.minnced</groupId>
+            <artifactId>jdave-native-linux-x86-64</artifactId>
+            <version>0.1.7</version>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
